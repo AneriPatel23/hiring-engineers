@@ -88,7 +88,8 @@ $ sudo service mysql start //to start mysql service
 
 To configure Mysql integration in datadog, these are the steps I followed:
 
--       Create a datadog user with replication rights in your MySQL server. Install Mysql server and run the following queries:
+- Create a datadog user with replication rights in your MySQL server. Install Mysql server and run the following queries:
+
 ```
 CREATE USER 'datadog'@'localhost' IDENTIFIED BY 'GIE14HTirTtq;oza7UhyP8gx';
 GRANT REPLICATION CLIENT ON *.* TO 'datadog'@'localhost' WITH MAX_USER_CONNECTIONS 5;
@@ -221,8 +222,7 @@ initialize(**options)
 print api.Timeboard.get_all()
 ```
 
-**This is the timeboard created in datadog: **
-
+**This is the timeboard created in datadog:**
 
 ![Timeboard](https://github.com/AneriPatel23/images/blob/master/7-timebaord_graph.png)
 
@@ -261,7 +261,7 @@ It creates different messages based on whether the monitor is in an Alert, Warni
 ![sat-sun_off](https://github.com/AneriPatel23/images/blob/master/12-scheduled%20downtime.png)
 
 
-**I also created a recurring downtime that silences email alert notifications from 7pm to 9am daily on M-F. **
+**I also created a recurring downtime that silences email alert notifications from 7pm to 9am daily on M-F.**
 
 
 ![mon-fri_off](https://github.com/AneriPatel23/images/blob/master/13-recurring%20downtime.png)
@@ -336,7 +336,7 @@ After the latest version of pip was installed,
 -	I created python file ```my_app.py``` :
 
 -	Executed the following command to collect traces of python app.
-```ddtrace-tun python my_app.py```
+```ddtrace-run python my_app.py```
 
 Initially when I ran ```ddtrace-run``` command, I was getting this error:
 
