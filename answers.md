@@ -360,13 +360,13 @@ I checked logs file located at ```/var/log/datadog/trace-agent.log``` and found 
 
 But, I am still not getting any traces reported. I even tried by manually inserting middleware by adding the code for middleware in the app file. But I still have no traces collected. 
 
-I executed ```my_app.py``` file and also tried printing something on the console to make sure the file is running. It worked well but while executing the file with ```ddtrace-run```, I don’t get any traces being reported back to the datadog.
+I executed ```my_app.py``` file and also tried printing something on the console to make sure the file is running. It worked well on my windows command prompt but while executing the file with ```ddtrace-run``` in vagrant Ubuntu VM, I don’t get any traces being reported back to the datadog.
 
 The logs file also does not show any error. 
 
-Here are the screenshots of the terminal on executing the `ddtrace-run` command and images of executing the python file without `ddtrace-run`.
+Here are the screenshots of the local terminal on executing the python file.
 
-**terminal output on executing `ddtrace-run python my_app.py`**
+**terminal output on executing python file:**
 
 ![](https://github.com/AneriPatel23/images/blob/master/200_statuscode.PNG)
 
