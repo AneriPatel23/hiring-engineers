@@ -47,7 +47,7 @@ After setting up Ubuntu VM via Vagrant, I installed the datadog agent using this
 ```
 DD_API_KEY=196f66f0b5580cfc5e6cfd6948bXXXXX bash -c "$(curl -L https://raw.githubusercontent.com/DataDog/datadog-agent/master/cmd/agent/install_script.sh)"
 ```
-You can find the easy-install command based on the agent you are using on the datadog portal. As I am using Ubuntu, I came across this command via ```Integration > Agent > Ubuntu``` section in my datadog portal. 
+The easy-install command based on the agent I am using was obtained from the datadog portal. As I am using Ubuntu, I came across this command via ```Integration > Agent > Ubuntu``` section in my datadog portal. 
 
 Once running this command, agent is installed on VM and ```datdog.yaml``` configuration file is generated in ```/etc/datadog-agent```.
 I added some tags to this configuration file. This is the configuration file: 
@@ -63,9 +63,9 @@ tags:
 apm_config:
    enabled: true
  ```
-Make sure you add tags with proper indentation. The tags won’t be reflected if they are not inserted at proper indentation. 
+I did not add tags with proper indentation. That created a problem. The tags won’t be reflected if they are not inserted at proper indentation. So, I searched and found that .yaml file should have its content in proper indentation. 
 
-You can see the hostmap in the ```Infrastructure/HostMap``` section of datadog portal. You can also filter hosts based on the tags specified in the configuration file.
+The hostmap is found in the ```Infrastructure/HostMap``` section of datadog portal. One can also filter hosts based on the tags specified in the configuration file.
 
 **This is the host map in datadog:**
 
@@ -124,7 +124,7 @@ options:
 
 ### Create a custom Agent check that submits a metric named my_metric with a random value between 0 and 1000.
 
-The custom metric file ```mycheck.py``` is created and shown below. The custom Agent check submits a metric named ```my_metric``` with a random value between 0 to 1000. I created the ```mycheck.py``` file in ```/etc/datadog-agent/checks.d``` and its corresponding ```mycheck.yaml``` config file in ```/etc/datadog-agent/conf.d ``` directory. The file names of both ```.py``` file and ```.yaml``` file should be same. Also make sure that you put ```.py``` check file in ```checks.d``` and ```.yaml``` file in ```conf.d``` and not anywhere else, otherwise you will encounter an error saying ``` Error: no valid check found```. 
+The custom metric file ```mycheck.py``` is created and shown below. The custom Agent check submits a metric named ```my_metric``` with a random value between 0 to 1000. I created the ```mycheck.py``` file in ```/etc/datadog-agent/checks.d``` and its corresponding ```mycheck.yaml``` config file in ```/etc/datadog-agent/conf.d ``` directory. The file names of both ```.py``` file and ```.yaml``` file should be same. I mistakenly placed ```mycheck.py``` file in `conf.d` and it would not run. So, make sure to put ```.py``` check file in ```checks.d``` and ```.yaml``` file in ```conf.d``` and not anywhere else, otherwise there will be an error saying ``` Error: no valid check found```. 
 
 **mycheck.py**
 
@@ -152,11 +152,13 @@ init_config:
 instances:
     [{min_collection_interval: 45}]
   ```
-You can execute the check file using the following command:
+To execute the check file, I executed the following command:
 
-For agent v5: ``` sudo -u dd-agent -- dd-agent check <check_name>```
+``` sudo -u dd-agent -- dd-agent check <check_name>```
 
-For agent v6: ``` sudo -u dd-agent -- datadog-agent check <check_name>```
+But, it gave an error. I found out that this is the command for agent v5 and I had agent v6. Hence, I then executed the following command and it worked well.
+
+``` sudo -u dd-agent -- datadog-agent check <check_name>```
 
 **Bonus Question Can you change the collection interval without modifying the Python check file you created?**
 
@@ -166,9 +168,9 @@ By changing the value of min_collection_interval parameter in the .yaml file of 
  
 ### Using the Datadog API, a timeboard is created which contains my custom metric scoped over the host.
 
-This is the ```timeboard.py``` script file that creates a timeboard. I face some issues while creating timeboard. There was problem accessing the datadog module using the older ```pip version 1.0```. I had the error regarding the SSL connection. So, I searched on internet and found a workaround to download and install datadog module. I updated pip to its latest version, ran this ``` sudo apt-get update ``` to get the updated packages and finally installed datadog module using ```pip install datadog```.
+This is the ```my_timeboard.py``` script file that creates a timeboard. I face some issues while creating timeboard. There was problem accessing the datadog module using the older ```pip version 1.0```. I had the error regarding the SSL connection. So, I searched on internet and found a workaround to download and install datadog module. I updated pip to its latest version, ran this ``` sudo apt-get update ``` to get the updated packages and finally installed datadog module using ```pip install datadog```.
 
-**timeboard.py**
+**my_timeboard.py**
 ```
 from datadog import initialize, api
 
@@ -190,7 +192,25 @@ graphs = [{
         ],        
         "viz": "timeseries"        
     },    
-    "title": "Average Memory Free"    
+    "title": "my_metric graph"    
+}, {
+    "definition": {
+        "events": [],
+        "requests": [
+            {"q": "anomalies(avg:mongodb.database_size{role:database:mongodb}, 'basic', 3)"
+             }],
+        "viz": "timeseries"
+    },
+    "title": "Database anomalies"
+}, {
+    "definition": {
+        "events": [],
+        "requests": [
+            {"q": "avg:my_metric{*}.rollup(sum, 3600)"}
+        ],
+        "viz": "timeseries"
+    },
+    "title": "Rollup Sum of my_metric every hour"
 }]
 template_variables = [{
     "name": "precise64",    
@@ -206,25 +226,10 @@ print api.Timeboard.create(title=title,
                      read_only=read_only)
  ```
 
-This is ```gettb.py``` script file that gets all timeboards.
-
-**gettb.py**
-```
-from datadog import initialize, api
-
-options = {
-    'api_key': '196f66f0b5580cfc5e6cfd6948bXXXXX',    
-    'app_key': '3fe788698c117720609755ca53eaca1ad8eXXXXX'    
-}
-
-initialize(**options)
-
-print api.Timeboard.get_all()
-```
 
 **This is the timeboard created in datadog:**
 
-![Timeboard](https://github.com/AneriPatel23/images/blob/master/7-timebaord_graph.png)
+![Timeboard](https://github.com/AneriPatel23/images/blob/master/my_timeboard.png)
 
 ## Monitoring data:
 
@@ -237,7 +242,7 @@ print api.Timeboard.get_all()
 
 •	And ensure that it will notify you if there is No Data for this query over the past 10m.
 
-Creating the monitors was straightforward. The documentation had explanation of all the variables like is_alert, is_warning, is_no_Data and more. I referred to the documentation for every step and was able to do it successfully with the help of that. I have created different messages based on system in alert, warning or no_data state. Host name and host ip is displayed by surrounding it in sets of curly braces. 
+Creating the monitors was straightforward. The documentation had explanation of all the variables like is_alert, is_warning, is_no_Data and more. I referred to the documentation for every step and was able to do it successfully with the help of that. I have created different messages based on system in alert, warning or no_data state. I read in the documentation regarding how to give host name and ip in the alert message. Host name and host ip is displayed by surrounding it in sets of curly braces. 
 
 **This is the monitor created:**
 
@@ -358,6 +363,28 @@ But, I am still not getting any traces reported. I even tried by manually insert
 I executed ```my_app.py``` file and also tried printing something on the console to make sure the file is running. It worked well but while executing the file with ```ddtrace-run```, I don’t get any traces being reported back to the datadog.
 
 The logs file also does not show any error. 
+
+Here are the screenshots of the terminal on executing the `ddtrace-run` command and images of executing the python file without `ddtrace-run`.
+
+**terminal output on executing `ddtrace-run python my_app.py`**
+
+![](https://github.com/AneriPatel23/images/blob/master/200_statuscode.PNG)
+
+**output screen on hitting 127.0.0.1:5555**
+
+![](https://github.com/AneriPatel23/images/blob/master/entrypoint.PNG)
+
+**output screen on hitting 127.0.0.1:5555/apm/api**
+
+![](https://github.com/AneriPatel23/images/blob/master/apm_api.PNG)
+
+**Host on datadog:**
+
+![](https://github.com/AneriPatel23/images/blob/master/host_screenshot.PNG)
+
+**output screen on hitting 127.0.0.1:5555/apm/trace**
+
+![](https://github.com/AneriPatel23/images/blob/master/traces_post.PNG)
 
 **Is there anything creative you would use Datadog for?**
 
